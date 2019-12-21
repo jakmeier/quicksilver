@@ -24,6 +24,7 @@ use {
             IElement, INode, document,
             html_element::CanvasElement,
         },
+        traits::INonElementParentNode,
         unstable::TryInto
     }
 };
@@ -149,8 +150,12 @@ impl Window {
             .map_err(|_| QuicksilverError::ContextError("Failed to create canvas element".to_owned()))?;
         let canvas: CanvasElement = element.try_into()
             .map_err(|_| QuicksilverError::ContextError("Failed to create canvas element".to_owned()))?;
-        let body = document.body().ok_or(QuicksilverError::ContextError("Failed to find body node".to_owned()))?;
-        body.append_child(&canvas);
+        let game_root: stdweb::web::Element = 
+            document.get_element_by_id("game-root")
+            .or_else(|| document.body().map(stdweb::web::HtmlElement::into))
+            .ok_or(QuicksilverError::ContextError("Failed to find body node".to_owned()))?;
+        
+        game_root.append_child(&canvas);
         canvas.set_width(size.x as u32);
         canvas.set_height(size.y as u32);
         unsafe { set_instance(BackendImpl::new(canvas.clone(), settings.scale, settings.multisampling != None)?) };
