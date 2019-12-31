@@ -1,6 +1,9 @@
 use crate::{
     Result,
+    backend::Backend,
     geom::Vector,
+    geom::Rectangle,
+    graphics::View,
     lifecycle::{Application, State, Settings, Window},
 };
 #[cfg(not(target_arch = "wasm32"))]
@@ -21,7 +24,7 @@ use {
     stdweb::{
         Value, unstable::TryInto,
         web::{
-            document, window, IEventTarget,  IWindowOrWorker,
+            document, window, IEventTarget,  IWindowOrWorker, IHtmlElement,
             event::{
                 BlurEvent, ConcreteEvent, FocusEvent, GamepadConnectedEvent, GamepadDisconnectedEvent,
                 IGamepadEvent, IKeyboardEvent, IMouseEvent, ITouchEvent, KeyDownEvent, KeyUpEvent,
@@ -188,26 +191,30 @@ fn run_impl<T: State, F: FnOnce()->Result<T>>(title: &str, size: Vector, setting
         }
     });
 
-    handle_event(&window, &app, move |mut app, event: TouchEnd| {
+    handle_event(&canvas, &app, move |mut app, event: TouchEnd| {
         let touches = event.touches();
         if touches.len() == 0 {
             app.event_buffer.push(Event::MouseButton(MouseButton::Left, ButtonState::Released));
         }
     });
-    handle_event(&window, &app, move |mut app, event: TouchMove| {
+    handle_event(&canvas, &app, move |mut app, event: TouchMove| {
         let touches = event.touches();
         if touches.len() == 1 {
             let touch = &touches[0];
             let position = Vector::new(touch.page_x() as f32, touch.page_y() as f32);
+            let page_offset = app.window.backend().page_offset();
+            let position = position - Vector::new(page_offset.0 as f32, page_offset.1 as f32);
             let position = app.window.project() * (position - app.window.screen_offset());
             app.event_buffer.push(Event::MouseMoved(position));
         }
     });
-    handle_event(&window, &app, move |mut app, event: TouchStart| {
+    handle_event(&canvas, &app, move |mut app, event: TouchStart| {
         let touches = event.touches();
         if touches.len() == 1 {
             let touch = &touches[0];
             let position = Vector::new(touch.page_x() as f32, touch.page_y() as f32);
+            let page_offset = app.window.backend().page_offset();
+            let position = position - Vector::new(page_offset.0 as f32, page_offset.1 as f32);
             let position = app.window.project() * (position - app.window.screen_offset());
             app.event_buffer.push(Event::MouseMoved(position));
             app.event_buffer.push(Event::MouseButton(MouseButton::Left, ButtonState::Pressed));
@@ -253,9 +260,10 @@ fn handle_event<T, E, F>(
 {
     let application = application.clone();
     target.add_event_listener(move |event: E| {
-        event.prevent_default();
-        event.stop_propagation();
-        event.cancel_bubble();
+        // In paddlers, I need more fine-grained control, thus there events are not stopped by default
+        // event.prevent_default();
+        // event.stop_propagation();
+        // event.cancel_bubble();
         handler(application.borrow_mut(), event);
     });
 }

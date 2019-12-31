@@ -10,7 +10,9 @@ use std::mem::size_of;
 use stdweb::{
     web::{
         html_element::CanvasElement,
-        TypedArray
+        IHtmlElement,
+        Rect,
+        TypedArray,
     },
     unstable::TryInto
 };
@@ -358,6 +360,14 @@ impl Backend for WebGLBackend {
     fn resize(&mut self, size: Vector) {
         self.canvas.set_width(size.x as u32);
         self.canvas.set_height(size.y as u32);
+    }
+
+    fn page_offset(&self) -> (f64,f64) {
+        let canvas_rect = self.canvas.get_bounding_client_rect();
+        let body_rect = document().body().as_ref().map(IHtmlElement::get_bounding_client_rect);
+        let x = canvas_rect.get_x() - body_rect.as_ref().map(Rect::get_x).unwrap_or(0.0);
+        let y = canvas_rect.get_y() - body_rect.as_ref().map(Rect::get_y).unwrap_or(0.0);
+        (x,y)
     }
 }
 

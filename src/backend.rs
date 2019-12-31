@@ -51,6 +51,9 @@ pub(crate) trait Backend {
         self.flush();
         Ok(())
     }
+    fn page_offset(&self) -> (f64,f64) {
+        (0.0,0.0)
+    }
 }
 
 const VERTEX_SIZE: usize = 9; // the number of floats in a vertex

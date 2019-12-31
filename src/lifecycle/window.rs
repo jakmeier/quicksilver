@@ -21,7 +21,7 @@ use {
     crate::error::QuicksilverError,
     stdweb::{
         web::{
-            IElement, INode, document,
+            IElement, IHtmlElement, INode, document,
             html_element::CanvasElement,
         },
         traits::INonElementParentNode,
@@ -151,9 +151,13 @@ impl Window {
         let canvas: CanvasElement = element.try_into()
             .map_err(|_| QuicksilverError::ContextError("Failed to create canvas element".to_owned()))?;
         let game_root: stdweb::web::Element = 
-            document.get_element_by_id("game-root")
-            .or_else(|| document.body().map(stdweb::web::HtmlElement::into))
-            .ok_or(QuicksilverError::ContextError("Failed to find body node".to_owned()))?;
+            if let Some(id) = settings.root_id {
+                document.get_element_by_id(id)
+                    .ok_or(QuicksilverError::ContextError("Failed to find specified HTML id".to_owned()))?
+                } else {
+                    document.body().map(stdweb::web::HtmlElement::into)
+                        .ok_or(QuicksilverError::ContextError("Failed to find body node".to_owned()))?
+            };
         
         game_root.append_child(&canvas);
         canvas.set_width(size.x as u32);

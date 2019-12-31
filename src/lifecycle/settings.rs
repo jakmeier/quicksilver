@@ -42,6 +42,11 @@ pub struct Settings {
     ///
     /// Does nothing on web currently
     pub multisampling: Option<u16>,
+    /// To which HTML element the canvas should be appended, determined by ID
+    /// 
+    /// Default is body
+    #[cfg(target_arch = "wasm32")]
+    pub root_id: Option<&'static str>, 
 }
 
 impl Default for Settings {
@@ -59,6 +64,8 @@ impl Default for Settings {
             icon_path: None,
             vsync: true,
             multisampling: None,
+            #[cfg(target_arch = "wasm32")]
+            root_id: None, 
         }
     }
 }
