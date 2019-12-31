@@ -285,8 +285,8 @@ impl Window {
         self.adjust_size(available);
     }
 
-    // Get the screen offset
-    pub(crate) fn screen_offset(&self) -> Vector {
+    /// Get the screen offset
+    pub fn screen_offset(&self) -> Vector {
         self.screen_region.top_left()
     }
 
