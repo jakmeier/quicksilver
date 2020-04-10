@@ -76,14 +76,14 @@ impl<T: State> Application<T> {
     #[cfg(target_arch = "wasm32")]
     pub fn draw(&mut self) -> Result<()> {
         let current = current_time();
-        let delta_draw = current - self.last_draw;
-        if delta_draw >= self.window.draw_rate() {
+        // let delta_draw = current - self.last_draw;
+        // if delta_draw >= self.window.draw_rate() {
             self.state.draw(&mut self.window)?;
             self.window.flush()?;
             self.window.backend().present()?;
-            self.window.log_framerate(delta_draw);
+            // self.window.log_framerate(delta_draw);
             self.last_draw = current;
-        }
+        // }
         Ok(())
     }
 }
