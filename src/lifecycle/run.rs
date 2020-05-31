@@ -27,7 +27,7 @@ use {
             document, window, IEventTarget,  IWindowOrWorker, IHtmlElement,
             event::{
                 BlurEvent, ConcreteEvent, FocusEvent, GamepadConnectedEvent, GamepadDisconnectedEvent,
-                IGamepadEvent, IKeyboardEvent, IMouseEvent, ITouchEvent, KeyDownEvent, KeyUpEvent,
+                IEvent, IGamepadEvent, IKeyboardEvent, IMouseEvent, ITouchEvent, KeyDownEvent, KeyUpEvent,
                 MouseButton as WebMouseButton, MouseDownEvent, MouseMoveEvent, PointerOutEvent,
                 PointerOverEvent, MouseUpEvent, ResizeEvent, TouchEnd, TouchMove, TouchStart,
             }
@@ -219,6 +219,11 @@ fn run_impl<T: State, F: FnOnce()->Result<T>>(title: &str, size: Vector, setting
             app.event_buffer.push(Event::MouseMoved(position));
             app.event_buffer.push(Event::MouseButton(MouseButton::Left, ButtonState::Pressed));
         }
+        // Fix issue where some phones issue a mouse and a touch event
+        // developer.mozilla.org/en-US/docs/Web/API/Touch_events/Supporting_both_TouchEvent_and_MouseEvent
+        // If the browser fires both touch and mouse events because of a single user input, 
+        // the browser must fire a touchstart before any mouse events.
+        event.prevent_default();
     });
 
     update(app.clone())?;
