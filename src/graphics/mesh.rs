@@ -4,6 +4,7 @@ use crate::{
 };
 
 /// A way to store rendered objects without having to re-process them
+#[derive(Clone)]
 pub struct Mesh {
     /// All the vertices in the mesh
     pub vertices: Vec<Vertex>,

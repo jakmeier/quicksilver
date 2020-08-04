@@ -36,6 +36,7 @@ use {
 
 
 ///The window currently in use
+#[derive(Clone)]
 pub struct Window {
     #[cfg(feature = "gilrs")]
     gilrs: Gilrs,
